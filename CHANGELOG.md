@@ -5,6 +5,7 @@
 
 - Python 3.13+ project metadata, uv lockfile, and repository-local environment workflow.
 - Gradio 6 image interface with lazy documented model downloads and local-only binding.
+- Gradio model dropdown for all six downloadable README checkpoints, with MiVOLO v2 retained as the default.
 - Official version-pinned download source for the legacy MiVOLO checkpoint.
 - Explicit OmegaConf dependency required by the documented detector checkpoint.
 - Shared macOS path normalization and automatic MPS/CPU device selection.

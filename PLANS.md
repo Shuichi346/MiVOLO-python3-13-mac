@@ -8,18 +8,18 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 
 ## Resume Here
 
-- Updated: 2026-08-12 09:08Z
+- Updated: 2026-08-12 09:26Z
 - Overall status: COMPLETE
 - Active phase: None
 - Active step: None
-- Last verified checkpoint: Final Acceptance Command attempt 4/4 passed all 17 tests, then the final cached Gradio smoke returned an output image and `Completed on mps: 0 face(s), 0 person(s).`
-- Completed since previous checkpoint: Added the declared OmegaConf dependency and lock resolution, passed final acceptance, completed real local MPS inference with both official cached model artifacts, and stopped browser/server sessions cleanly.
+- Last verified checkpoint: Phase 4 acceptance attempt 2/2 passed all 8 focused Gradio tests in 0.059 seconds; the completed migration baseline remains 17 passing tests plus a cached MPS GUI inference.
+- Completed since previous checkpoint: Added and documented the six-model dropdown, retained MiVOLO v2 as the default, preserved lazy cached downloads and custom overrides, added face-only mode validation, and passed focused acceptance.
 - In progress: None
 - Next action: None
 - Blockers / decisions needed: None
-- Final verification: PASS — 4/4 attempts used; `uv run python -m unittest discover -s tests -v` exited 0 for the final dependency-repaired state; 17 tests passed; manual Gradio inference succeeded on MPS.
-- Working tree state: `/Users/shuichi/Documents/GitHub/MiVOLO-python3-13-mac`; branch `codex/313`; HEAD `d5e5fc13383f43803646fff6c26792cdc5107045`; planned packaging, runtime, CLI, GUI, evaluation/tool, test, script, and documentation files are modified or untracked; `.venv` and Playwright artifacts are ignored; no staged changes.
-- Evidence: Attempt 4/4 built `antlr4-python3-runtime==4.9.3`, installed OmegaConf through uv, rebuilt MiVOLO, and passed 17 tests in 0.056 seconds. The manual flow loaded the 68,125,494-parameter fused detector, ran the banner at 352x640 on MPS, returned a Gradio output image with zero detections, and shut down browser/server cleanly.
+- Final verification: PASS — Phase 4 attempt 1/2 failed before collection because `tests/` is not a package; corrected discovery attempt 2/2 ran 8 tests and exited 0. The completed migration baseline remains PASS with 4/4 original attempts used and a successful MPS GUI inference.
+- Working tree state: `/Users/shuichi/Documents/GitHub/MiVOLO-python3-13-mac`; branch `codex/313`; HEAD `d5e5fc13383f43803646fff6c26792cdc5107045`; `mivolo/gui.py`, `tests/test_gui.py`, README, changelog, notes, and this plan are modified; no files are staged.
+- Evidence: Focused discovery verified the configured dropdown choices/default, lazy pinned Hugging Face resolution, lazy cached Google Drive resolution, offline app construction, inference adaptation, unsupported face-only mode handling, local launch settings, and empty-input behavior. All 8 tests passed in 0.059 seconds without downloading weights or starting a server.
 
 ## Execution Contract
 
@@ -103,6 +103,7 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - [x] SC6: Mocked GUI inference converts Gradio RGB input to MiVOLO BGR input, applies options, and returns RGB output and status without loading real weights.
 - [x] SC7: The original `demo.py` entry remains usable and documentation names uv install, CLI, GUI, model-cache, trusted-weight, MPS/CPU, and local-bind behavior.
 - [x] SC8: One real manual GUI inference on `images/banner.jpg` completes using the default downloaded detector/checkpoint and produces an annotated output image on macOS; CPU is an acceptable explicit fallback if an unsupported MPS operation is reported and documented.
+- [x] SC9: The Gradio UI exposes the six downloadable pretrained checkpoints listed in the README as a dropdown, defaults to the existing MiVOLO v2 checkpoint, resolves only the selected checkpoint lazily, and retains a trusted local checkpoint override.
 
 ## Verification Contract
 
@@ -116,6 +117,14 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - Manual smoke check: After the first green final command, run `uv run mivolo-gui --server-name 127.0.0.1 --server-port 7860`, open `http://127.0.0.1:7860`, upload `images/banner.jpg`, keep default thresholds/mode/device and default model sources, click inference once, and confirm an annotated result and success status. Stop the server after the observation. Perform this flow once for the relevant final artifact; model download time is external to automated verification.
 - Failure policy: Repair only failures attributable to planned changes and within Success Criteria. Record unrelated findings without fixing them. If the final command cannot pass because it includes an unrelated pre-existing failure, block for plan revision rather than weakening the command.
 - Green stop rule: The first in-budget exit `0` ends automated verification. Run no additional tests, lint, typecheck, coverage, build, or review commands afterward.
+
+### Phase 4 Verification Addendum
+
+- Scope: SC9 only; the completed Phase 1–3 attempt budget is not reset.
+- Acceptance command: `uv run python -m unittest discover -s tests -p 'test_gui.py' -v`
+- Timeout: 5 minutes; maximum 2 executions.
+- Offline boundary: Mock Hugging Face and Google Drive downloads; inspect the constructed component configuration rather than downloading multi-hundred-megabyte checkpoints or launching a server.
+- Green stop rule: The first exit `0` ends Phase 4 automated verification.
 
 ## Architecture Changes
 
@@ -237,6 +246,20 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - **Risk:** Medium — first-run downloads are large and network-dependent.
 - **Idempotence & Recovery:** Record server session/PID, cache paths, and observed download completion before pausing. Before retrying, call the same Hub resolver to reuse validated cache entries; never delete shared cache. A failed automated attempt consumes budget. The manual flow runs once per relevant implementation state.
 
+### Phase 4: Gradio model selection enhancement
+
+#### Step 4.1: Add the documented model dropdown
+
+- **Agent:** `coding-agent`
+- **Location:** `mivolo/gui.py`, `tests/test_gui.py`, `README.md`, `CHANGELOG.md`, `NOTES.md`, and this plan
+- **Action:** Replace the single implicit checkpoint choice with a dropdown covering every downloadable pretrained checkpoint in the README while keeping MiVOLO v2 as the default.
+- **Details:** Represent model labels and immutable download sources centrally. Keep app construction offline, resolve only the selected checkpoint during inference, use the pinned Hugging Face revision for MiVOLO v2, and cache README Google Drive checkpoints through gdown. Preserve the normalized trusted local checkpoint field as an explicit override. Reject persons-only inference for face-only checkpoints with an actionable error.
+- **Dependencies:** Step 3.3
+- **Verification:** Execute the Phase 4 Verification Addendum once after implementation and documentation inspection.
+- **Complexity:** Medium
+- **Risk:** Medium — face-only and face-plus-person checkpoints support different inference modes, and remote artifacts are large.
+- **Idempotence & Recovery:** Source and documentation edits are rerunnable. Model downloads remain lazy and cached; tests mock every network/model boundary.
+
 ## Risks and Mitigations
 
 1. Risk: Current binary ML packages may have incompatible Python 3.13/macOS constraints. Mitigation: Step 1.1 locks only releases with matching wheels and permits one targeted dependency repair within its bounded check budget.
@@ -256,6 +279,7 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - [x] (2026-08-12 08:11Z) Step 3.1: COMPLETE — evidence: bounded artifact inspection confirmed 15 focused standard-library tests map to SC1-SC7, mock all model/network work, avoid server startup, and have clean diff formatting; execution remains reserved for final acceptance.
 - [x] (2026-08-12 08:12Z) Step 3.2: COMPLETE — evidence: bounded documentation inspection confirmed uv/Python setup, GUI/CLI commands, cache/token, trusted weights, MPS/CPU fallback, local binding, PEP 517 fix, changelog/notes, and ignore hygiene; scoped diff formatting is clean.
 - [x] (2026-08-12 09:08Z) Step 3.3: COMPLETE — evidence: user-authorized attempt 4/4 passed all 17 tests in 0.056 seconds; the cached one-pass Gradio flow loaded both documented defaults, returned an output image with success status on MPS, and browser/server shutdown succeeded.
+- [x] (2026-08-12 09:26Z) Step 4.1: COMPLETE — evidence: all six downloadable README sources map to the dropdown, MiVOLO v2 remains the default, app construction stays offline, and corrected acceptance attempt 2/2 passed all 8 focused tests in 0.059 seconds.
 
 ## Decision Log
 
@@ -277,6 +301,9 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - Decision: Use standard-library `unittest` and one real manual GUI inference as the acceptance boundary.
   Rationale: The repository has no test framework; focused mocks prove integration contracts without adding coverage infrastructure or repeatedly downloading large weights.
   Date/Author: 2026-08-12 / Codex
+- Decision: Offer only README rows with a downloadable checkpoint and keep the demo-only MiVOLO v1 Lagenda row out of the dropdown.
+  Rationale: A selectable model must resolve to a usable local artifact; the v1 Lagenda row exposes only a hosted demo, while the other six rows have verified official checkpoint sources.
+  Date/Author: 2026-08-12 / Codex
 
 ## Surprises & Discoveries
 
@@ -293,6 +320,8 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - The historical `iitolstykh/demo_xnet_volo_cross` default is unavailable. The exact legacy file remains publicly downloadable from official repository `iitolstykh/mivolo_v2` at revision `4eb4bb906ffd13ebbea70205691afbe30ccbc09e`; main no longer contains it.
 - Current timm VOLO inserts `pos_drop_rate` between `drop_rate` and `attn_drop_rate`; the legacy positional `super().__init__` call therefore shifts all later values and must use explicit keywords.
 - The current detector checkpoint contains an OmegaConf object. Current Ultralytics attempts a pip-based auto-install when `omegaconf` is absent, which is incompatible with this intentionally pip-free uv environment; `omegaconf` must be a declared project dependency.
+- gdown metadata confirms all five README Google Drive IDs remain available. The IMDB MiVOLO artifact's remote filename says `4.22` while the README metric/link text says `4.24`; the UI label avoids embedding that inconsistent filename metric.
+- Direct module-style unittest selection cannot import `tests.test_gui` because `tests/` has no `__init__.py`; scoped discovery is the correct focused command.
 
 ## Outcomes & Retrospective
 
@@ -300,3 +329,4 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - Runtime, evaluation, timing, data-loading, scripts, and preparation tools now follow the macOS MPS/CPU full-precision policy and current supported import paths.
 - The GUI remains download-free at construction, binds locally, normalizes macOS paths, uses version-pinned official legacy model artifacts, and declares the detector's serialized OmegaConf dependency instead of invoking pip at runtime.
 - Acceptance completed with 17 focused tests plus a real MPS-backed Gradio inference. Two manual integration findings (`None` optional inputs and removed/default model dependencies) required bounded repairs; immutable official sources and direct dependencies made the final flow reproducible.
+- The GUI now exposes all six locally downloadable README checkpoints through one model dropdown, keeps MiVOLO v2 as the default, caches only the model selected for inference, and reports incompatible persons-only requests for face-only checkpoints.
