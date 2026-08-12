@@ -23,3 +23,7 @@
   relying on Ultralytics' pip-based runtime auto-install fallback.
 - Gradio 6 app-level theme and CSS settings belong to `Blocks.launch()`, while `Blocks()` contains only the component
   tree.
+- Hugging Face downloads load an optional `HF_TOKEN` from the project-root `.env` at resolution time. The ignored
+  secret file is represented by a tracked `.env.example`, and an existing process environment value is not overridden.
+- Ultralytics 8.4 replaced the detector prediction `half` flag with `quantize`. The detector now passes `None` for
+  the fork's FP32 MPS/CPU policy (or `16` if half precision is ever enabled), avoiding the deprecation warning.

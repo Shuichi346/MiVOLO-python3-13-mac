@@ -1,4 +1,7 @@
+import os
+import tempfile
 import unittest
+from contextlib import chdir
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -26,7 +29,10 @@ class _FakePredictor:
 class GradioApplicationTests(unittest.TestCase):
     @patch("mivolo.gui.hf_hub_download", return_value="/cache/model.pth.tar")
     def test_default_checkpoint_uses_pinned_official_revision(self, download):
-        with patch("mivolo.gui.os.getenv", return_value=None):
+        with (
+            patch("mivolo.gui.load_dotenv"),
+            patch("mivolo.gui.os.getenv", return_value=None),
+        ):
             resolved = gui._resolve_checkpoint_path(gui.DEFAULT_MODEL, None)
 
         self.assertEqual(resolved, "/cache/model.pth.tar")
@@ -36,6 +42,34 @@ class GradioApplicationTests(unittest.TestCase):
             revision="4eb4bb906ffd13ebbea70205691afbe30ccbc09e",
             token=None,
         )
+
+    @patch("mivolo.gui.hf_hub_download", return_value="/cache/model.pth.tar")
+    def test_hugging_face_token_loads_from_project_dotenv(self, download):
+        with tempfile.TemporaryDirectory() as directory:
+            project_directory = Path(directory)
+            (project_directory / ".env").write_text("HF_TOKEN=test-token\n", encoding="utf-8")
+
+            with chdir(project_directory), patch.dict(os.environ, {}, clear=True):
+                resolved = gui._resolve_model_path(None, "example/models", "model.pt")
+
+        self.assertEqual(resolved, "/cache/model.pth.tar")
+        download.assert_called_once_with(
+            repo_id="example/models",
+            filename="model.pt",
+            revision=None,
+            token="test-token",
+        )
+
+    @patch("mivolo.gui.hf_hub_download", return_value="/cache/model.pth.tar")
+    def test_process_hugging_face_token_takes_precedence_over_dotenv(self, download):
+        with tempfile.TemporaryDirectory() as directory:
+            project_directory = Path(directory)
+            (project_directory / ".env").write_text("HF_TOKEN=file-token\n", encoding="utf-8")
+
+            with chdir(project_directory), patch.dict(os.environ, {"HF_TOKEN": "process-token"}, clear=True):
+                gui._resolve_model_path(None, "example/models", "model.pt")
+
+        self.assertEqual(download.call_args.kwargs["token"], "process-token")
 
     @patch("mivolo.gui._model_cache_directory", return_value=Path("/cache/mivolo"))
     @patch("mivolo.gui.gdown.cached_download", return_value="/cache/mivolo/model.pth.tar")

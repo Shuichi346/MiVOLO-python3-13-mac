@@ -8,18 +8,18 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 
 ## Resume Here
 
-- Updated: 2026-08-12 09:26Z
+- Updated: 2026-08-12 10:54Z
 - Overall status: COMPLETE
 - Active phase: None
 - Active step: None
-- Last verified checkpoint: Phase 4 acceptance attempt 2/2 passed all 8 focused Gradio tests in 0.059 seconds; the completed migration baseline remains 17 passing tests plus a cached MPS GUI inference.
-- Completed since previous checkpoint: Added and documented the six-model dropdown, retained MiVOLO v2 as the default, preserved lazy cached downloads and custom overrides, added face-only mode validation, and passed focused acceptance.
+- Last verified checkpoint: Phase 5 acceptance attempt 1/2 passed all 23 tests in 0.131 seconds without model downloads or GUI launch.
+- Completed since previous checkpoint: Added lazy project-root `.env` loading with environment precedence, an ignored secret policy and tracked template, and replaced the detector's deprecated `half` prediction key with `quantize`.
 - In progress: None
 - Next action: None
 - Blockers / decisions needed: None
-- Final verification: PASS — Phase 4 attempt 1/2 failed before collection because `tests/` is not a package; corrected discovery attempt 2/2 ran 8 tests and exited 0. The completed migration baseline remains PASS with 4/4 original attempts used and a successful MPS GUI inference.
-- Working tree state: `/Users/shuichi/Documents/GitHub/MiVOLO-python3-13-mac`; branch `codex/313`; HEAD `d5e5fc13383f43803646fff6c26792cdc5107045`; `mivolo/gui.py`, `tests/test_gui.py`, README, changelog, notes, and this plan are modified; no files are staged.
-- Evidence: Focused discovery verified the configured dropdown choices/default, lazy pinned Hugging Face resolution, lazy cached Google Drive resolution, offline app construction, inference adaptation, unsupported face-only mode handling, local launch settings, and empty-input behavior. All 8 tests passed in 0.059 seconds without downloading weights or starting a server.
+- Final verification: PASS — Phase 5 attempt 1/2 ran all 23 tests and exited 0. The earlier real MPS GUI inference remains the integrated smoke evidence.
+- Working tree state: `/Users/shuichi/Documents/GitHub/MiVOLO-python3-13-mac`; branch `main`; HEAD `8ae5ac9bd20fffdc4f39d433de3e0a45ad4ed0b7`; feature source, tests, dependency metadata, documentation, and this plan are modified; no files are staged.
+- Evidence: Installed Ultralytics 8.4.118 maps `quantize=None` to FP32 and warns whenever legacy `half` is supplied. `python-dotenv` 1.2.2 is locked and synchronized; offline tests prove `.env` loading, process-token precedence, and warning-free detector kwargs.
 
 ## Execution Contract
 
@@ -104,6 +104,8 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - [x] SC7: The original `demo.py` entry remains usable and documentation names uv install, CLI, GUI, model-cache, trusted-weight, MPS/CPU, and local-bind behavior.
 - [x] SC8: One real manual GUI inference on `images/banner.jpg` completes using the default downloaded detector/checkpoint and produces an annotated output image on macOS; CPU is an acceptable explicit fallback if an unsupported MPS operation is reported and documented.
 - [x] SC9: The Gradio UI exposes the six downloadable pretrained checkpoints listed in the README as a dropdown, defaults to the existing MiVOLO v2 checkpoint, resolves only the selected checkpoint lazily, and retains a trusted local checkpoint override.
+- [x] SC10: GUI Hugging Face downloads can read `HF_TOKEN` from an ignored project-root `.env`, while a process environment token retains precedence.
+- [x] SC11: Detector prediction uses Ultralytics' current `quantize` precision argument and emits no deprecated `half` warning while preserving FP32 MPS/CPU behavior.
 
 ## Verification Contract
 
@@ -125,6 +127,14 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - Timeout: 5 minutes; maximum 2 executions.
 - Offline boundary: Mock Hugging Face and Google Drive downloads; inspect the constructed component configuration rather than downloading multi-hundred-megabyte checkpoints or launching a server.
 - Green stop rule: The first exit `0` ends Phase 4 automated verification.
+
+### Phase 5 Verification Addendum
+
+- Scope: SC10-SC11 plus the existing offline regression suite.
+- Acceptance command: `uv run python -m unittest discover -s tests -v`
+- Timeout: 15 minutes; maximum 2 executions.
+- Offline boundary: Mock Hugging Face downloads and Ultralytics construction; do not launch the GUI or load model weights.
+- Green stop rule: The first exit `0` ends Phase 5 automated verification.
 
 ## Architecture Changes
 
@@ -260,6 +270,19 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - **Risk:** Medium — face-only and face-plus-person checkpoints support different inference modes, and remote artifacts are large.
 - **Idempotence & Recovery:** Source and documentation edits are rerunnable. Model downloads remain lazy and cached; tests mock every network/model boundary.
 
+### Phase 5: Environment token and precision compatibility
+
+#### Step 5.1: Load `HF_TOKEN` from `.env` and update detector precision configuration
+
+- **Agent:** `coding-agent`
+- **Location:** `mivolo/gui.py`, `mivolo/model/yolo_detector.py`, dependency metadata, ignore/template files, focused tests, README, changelog, notes, and this plan
+- **Action:** Load an optional project-root `.env` before Hugging Face downloads and replace the deprecated Ultralytics `half` prediction argument with `quantize`.
+- **Details:** Use `python-dotenv` with `override=False` so process environment variables remain authoritative. Keep `.env` ignored and provide `.env.example` without a secret. Preserve the MPS/CPU FP32 policy by passing `quantize=None`; retain the existing internal precision calculation so `16` is used if half precision is enabled in a future supported runtime.
+- **Dependencies:** Step 4.1
+- **Verification:** Execute the Phase 5 Verification Addendum after dependency sync and documentation inspection.
+- **Complexity:** Low
+- **Risk:** Low — the token must remain lazy and secret-safe, and the precision argument must preserve existing device behavior.
+
 ## Risks and Mitigations
 
 1. Risk: Current binary ML packages may have incompatible Python 3.13/macOS constraints. Mitigation: Step 1.1 locks only releases with matching wheels and permits one targeted dependency repair within its bounded check budget.
@@ -280,6 +303,7 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - [x] (2026-08-12 08:12Z) Step 3.2: COMPLETE — evidence: bounded documentation inspection confirmed uv/Python setup, GUI/CLI commands, cache/token, trusted weights, MPS/CPU fallback, local binding, PEP 517 fix, changelog/notes, and ignore hygiene; scoped diff formatting is clean.
 - [x] (2026-08-12 09:08Z) Step 3.3: COMPLETE — evidence: user-authorized attempt 4/4 passed all 17 tests in 0.056 seconds; the cached one-pass Gradio flow loaded both documented defaults, returned an output image with success status on MPS, and browser/server shutdown succeeded.
 - [x] (2026-08-12 09:26Z) Step 4.1: COMPLETE — evidence: all six downloadable README sources map to the dropdown, MiVOLO v2 remains the default, app construction stays offline, and corrected acceptance attempt 2/2 passed all 8 focused tests in 0.059 seconds.
+- [x] (2026-08-12 10:54Z) Step 5.1: COMPLETE — `python-dotenv==1.2.2` is locked and synchronized; source, secret-safe template/ignore policy, tests, and documentation are complete; Phase 5 attempt 1/2 passed all 23 tests in 0.131 seconds.
 
 ## Decision Log
 
@@ -304,6 +328,9 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - Decision: Offer only README rows with a downloadable checkpoint and keep the demo-only MiVOLO v1 Lagenda row out of the dropdown.
   Rationale: A selectable model must resolve to a usable local artifact; the v1 Lagenda row exposes only a hosted demo, while the other six rows have verified official checkpoint sources.
   Date/Author: 2026-08-12 / Codex
+- Decision: Load `.env` only at lazy Hugging Face model resolution with `override=False` and use Ultralytics `quantize=None` for the existing FP32 policy.
+  Rationale: This adds local token configuration without eager network work or overriding deployment secrets, and removes the warning without changing inference precision.
+  Date/Author: 2026-08-12 / Codex
 
 ## Surprises & Discoveries
 
@@ -322,6 +349,7 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - The current detector checkpoint contains an OmegaConf object. Current Ultralytics attempts a pip-based auto-install when `omegaconf` is absent, which is incompatible with this intentionally pip-free uv environment; `omegaconf` must be a declared project dependency.
 - gdown metadata confirms all five README Google Drive IDs remain available. The IMDB MiVOLO artifact's remote filename says `4.22` while the README metric/link text says `4.24`; the UI label avoids embedding that inconsistent filename metric.
 - Direct module-style unittest selection cannot import `tests.test_gui` because `tests/` has no `__init__.py`; scoped discovery is the correct focused command.
+- Ultralytics 8.4.118 removes `half` from the default configuration, maps it to `quantize` only through a deprecated-key compatibility shim, and uses `quantize == 16` to enable FP16 inference.
 
 ## Outcomes & Retrospective
 
@@ -330,3 +358,5 @@ Modernize the stalled 2023 MiVOLO repository so a fresh checkout installs reprod
 - The GUI remains download-free at construction, binds locally, normalizes macOS paths, uses version-pinned official legacy model artifacts, and declares the detector's serialized OmegaConf dependency instead of invoking pip at runtime.
 - Acceptance completed with 17 focused tests plus a real MPS-backed Gradio inference. Two manual integration findings (`None` optional inputs and removed/default model dependencies) required bounded repairs; immutable official sources and direct dependencies made the final flow reproducible.
 - The GUI now exposes all six locally downloadable README checkpoints through one model dropdown, keeps MiVOLO v2 as the default, caches only the model selected for inference, and reports incompatible persons-only requests for face-only checkpoints.
+- GUI Hugging Face downloads now accept `HF_TOKEN` from a project-root `.env` without overriding a process-provided token, and the real secret file is excluded from version control.
+- Detector inference now uses the supported Ultralytics `quantize` configuration and retains FP32 operation on MPS and CPU without the `half` deprecation warning.

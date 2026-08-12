@@ -353,8 +353,9 @@ downloadable checkpoint, so it is not offered as a local model.
 On the first inference with a selection, the GUI downloads the documented detector and selected checkpoint. The
 detector and MiVOLO v2 use official, version-pinned Hugging Face sources and are reused from the Hugging Face cache,
 normally under `~/.cache/huggingface/hub`. The five legacy README checkpoints use their documented Google Drive links
-and are cached under `${XDG_CACHE_HOME:-~/.cache}/mivolo`. Public defaults need no account; set `HF_TOKEN` only if your
-environment requires authenticated Hub access.
+and are cached under `${XDG_CACHE_HOME:-~/.cache}/mivolo`. Public defaults need no account. For authenticated Hub
+access, copy `.env.example` to `.env` and set `HF_TOKEN` there. A token already exported in the process environment
+takes precedence over `.env`.
 
 The device selector defaults to `auto`, which prefers Apple MPS and falls back to CPU. Both run in full precision.
 Choose CPU explicitly if PyTorch reports an unsupported MPS operation.

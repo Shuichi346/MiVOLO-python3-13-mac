@@ -10,6 +10,7 @@
 - Explicit OmegaConf dependency required by the documented detector checkpoint.
 - Shared macOS path normalization and automatic MPS/CPU device selection.
 - Focused offline compatibility tests for packaging, runtime, CLI, and GUI behavior.
+- Optional project-root `.env` configuration for `HF_TOKEN`, with process environment precedence.
 
 ### Changed
 
@@ -18,6 +19,7 @@
 - Updated validation, timing, and dataset-preparation utilities to the shared MPS/CPU device policy.
 - Moved command-line behavior into the `mivolo-cli` entry point while retaining `demo.py` compatibility.
 - Restricted legacy checkpoint loading instead of automatically falling back to unsafe pickle deserialization.
+- Replaced Ultralytics' deprecated `half` inference argument with the current `quantize` argument.
 
 ## 0.4.1dev (15.08.2023)
 

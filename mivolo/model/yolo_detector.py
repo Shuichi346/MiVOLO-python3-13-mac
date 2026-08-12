@@ -2,10 +2,12 @@ from typing import Dict, Union
 
 import numpy as np
 import PIL
-from mivolo.runtime import resolve_device, supports_half
-from mivolo.structures import PersonAndFaceResult
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
+
+from mivolo.runtime import resolve_device, supports_half
+from mivolo.structures import PersonAndFaceResult
+
 
 class Detector:
     def __init__(
@@ -32,7 +34,7 @@ class Detector:
         self.detector_kwargs = {
             "conf": conf_thresh,
             "iou": iou_thresh,
-            "half": self.half,
+            "quantize": 16 if self.half else None,
             "verbose": verbose,
             "device": str(self.device),
         }

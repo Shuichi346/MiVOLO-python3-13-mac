@@ -10,6 +10,7 @@ from typing import Optional, Sequence
 import gdown
 import gradio as gr
 import numpy as np
+from dotenv import load_dotenv
 from huggingface_hub import hf_hub_download
 
 from mivolo.predictor import Predictor
@@ -94,6 +95,13 @@ MODEL_SOURCES = {
 MODEL_CHOICES = tuple((source.label, model_id) for model_id, source in MODEL_SOURCES.items())
 
 
+def _huggingface_token() -> Optional[str]:
+    """Load the optional project token without overriding the process environment."""
+
+    load_dotenv(dotenv_path=Path.cwd() / ".env", override=False)
+    return os.getenv("HF_TOKEN") or None
+
+
 def _resolve_model_path(
     custom_path: Optional[str],
     repository: str,
@@ -106,8 +114,12 @@ def _resolve_model_path(
             raise FileNotFoundError(f"Trusted model file not found: {path}")
         return str(path)
 
-    token = os.getenv("HF_TOKEN") or None
-    return hf_hub_download(repo_id=repository, filename=filename, revision=revision, token=token)
+    return hf_hub_download(
+        repo_id=repository,
+        filename=filename,
+        revision=revision,
+        token=_huggingface_token(),
+    )
 
 
 def _model_cache_directory() -> Path:

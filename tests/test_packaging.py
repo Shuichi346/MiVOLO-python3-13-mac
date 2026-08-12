@@ -15,6 +15,7 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(project["project"]["scripts"]["mivolo-cli"], "mivolo.cli:main")
         self.assertEqual(project["project"]["scripts"]["mivolo-gui"], "mivolo.gui:main")
         self.assertIn("omegaconf>=2.3.1,<3", project["project"]["dependencies"])
+        self.assertIn("python-dotenv>=1.1,<2", project["project"]["dependencies"])
         self.assertEqual((ROOT / ".python-version").read_text(encoding="utf-8").strip(), "3.13")
         self.assertTrue((ROOT / "uv.lock").is_file())
 
