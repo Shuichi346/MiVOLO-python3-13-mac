@@ -1,3 +1,12 @@
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:center"><a href="README_ja.md">日本語</a></th>
+      <th style="text-align:center"><a href="README.md">English</a></th>
+    </tr>
+  </thead>
+</table>
+
 ## About This Repository
 
 This repository is a fork of WildChlamydia/MiVOLO. It is configured to run on Mac using Python 3.13 and uv. You can easily experience the GUI.

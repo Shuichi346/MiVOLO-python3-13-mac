@@ -1,3 +1,12 @@
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:center"><a href="README_ja.md">日本語</a></th>
+      <th style="text-align:center"><a href="README.md">English</a></th>
+    </tr>
+  </thead>
+</table>
+
 ## このリポジトリについて
 
 このリポジトリは、WildChlamydia/MiVOLOのフォークです。python 3.13, uvを使用してMacで動作するようにしています。簡単にGUIを体験できます。
