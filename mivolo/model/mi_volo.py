@@ -4,7 +4,8 @@ from typing import Optional
 import numpy as np
 import torch
 from mivolo.data.misc import prepare_classification_images
-from mivolo.model.create_timm_model import create_model
+from mivolo.model.create_timm_model import create_model, load_checkpoint_data
+from mivolo.runtime import resolve_device, supports_half
 from mivolo.structures import PersonAndFaceCrops, PersonAndFaceResult
 from timm.data import resolve_data_config
 
@@ -30,7 +31,7 @@ class Meta:
 
     def load_from_ckpt(self, ckpt_path: str, disable_faces: bool = False, use_persons: bool = True) -> "Meta":
 
-        state = torch.load(ckpt_path, map_location="cpu")
+        state = load_checkpoint_data(ckpt_path)
 
         self.min_age = state["min_age"]
         self.max_age = state["max_age"]
@@ -77,7 +78,7 @@ class MiVOLO:
     def __init__(
         self,
         ckpt_path: str,
-        device: str = "cuda",
+        device: str = "auto",
         half: bool = True,
         disable_faces: bool = False,
         use_persons: bool = True,
@@ -85,8 +86,8 @@ class MiVOLO:
         torchcompile: Optional[str] = None,
     ):
         self.verbose = verbose
-        self.device = torch.device(device)
-        self.half = half and self.device.type != "cpu"
+        self.device = resolve_device(device)
+        self.half = half and supports_half(self.device)
 
         self.meta: Meta = Meta().load_from_ckpt(ckpt_path, disable_faces, use_persons)
         if self.verbose:
@@ -136,9 +137,6 @@ class MiVOLO:
 
         for _ in range(steps):
             out = self.inference(input)  # noqa: F841
-
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
 
     def inference(self, model_input: torch.tensor) -> torch.tensor:
 
@@ -240,4 +238,4 @@ class MiVOLO:
 
 
 if __name__ == "__main__":
-    model = MiVOLO("../pretrained/checkpoint-377.pth.tar", half=True, device="cuda:0")
+    model = MiVOLO("../pretrained/checkpoint-377.pth.tar", half=False, device="auto")

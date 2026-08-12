@@ -321,40 +321,70 @@ Gender & Age recognition performance.
 
 ## Install
 
-Install pytorch 1.13+ and other requirements.
+This fork requires Python 3.13 or newer and uses [uv](https://docs.astral.sh/uv/) for the project environment.
+From a fresh checkout:
 
+```bash
+uv sync
 ```
-pip install -r requirements.txt
-pip install .
+
+uv reads `.python-version`, creates the repository-local `.venv`, and installs the exact versions in `uv.lock`.
+Run project commands with `uv run`; manual activation is not required.
+
+The package now uses declarative PEP 517 metadata from `pyproject.toml`. Git installs no longer execute the old
+`pkg_resources` dependency parser that caused metadata generation to fail. `requirements.txt` remains only as a
+compatibility pointer to the project metadata.
+
+## Gradio GUI
+
+Launch the local Gradio 6 interface:
+
+```bash
+uv run mivolo-gui
 ```
 
+Open [http://127.0.0.1:7860](http://127.0.0.1:7860), upload an image, and select **Run inference**. The server binds
+to `127.0.0.1` by default and is not exposed to other computers.
 
-## Demo
+On the first inference, the GUI downloads the documented detector and the legacy MiVOLO v2 checkpoint from an
+official, version-pinned Hugging Face repository snapshot. Files are reused from the Hugging Face cache, normally
+under `~/.cache/huggingface/hub`. Public defaults need no account;
+set `HF_TOKEN` only if your environment requires authenticated Hub access.
+
+The device selector defaults to `auto`, which prefers Apple MPS and falls back to CPU. Both run in full precision.
+Choose CPU explicitly if PyTorch reports an unsupported MPS operation.
+
+Optional local model fields accept normal paths, Finder-quoted paths, and Terminal paths with escaped spaces. PyTorch
+and Ultralytics weight files can contain executable pickle data, so only select custom `.pt` or `.pth.tar` files you
+trust.
+
+## Command-line demo
 
 1. [Download](https://drive.google.com/file/d/1CGNCkZQNj5WkP3rLpENWAOgrBQkUWRdw/view) body + face detector model to `models/yolov8x_person_face.pt`
 2. [Download](https://drive.google.com/file/d/11i8pKctxz3wVkDBlWKvhYIh7kpVFXSZ4/view) mivolo checkpoint to `models/mivolo_imbd.pth.tar`
 
 ```bash
-wget https://variety.com/wp-content/uploads/2023/04/MCDNOHA_SP001.jpg -O jennifer_lawrence.jpg
-
-python3 demo.py \
+uv run mivolo-cli \
 --input "jennifer_lawrence.jpg" \
 --output "output" \
---detector-weights "models/yolov8x_person_face.pt " \
+--detector-weights "models/yolov8x_person_face.pt" \
 --checkpoint "models/mivolo_imbd.pth.tar" \
---device "cuda:0" \
+--device "auto" \
 --with-persons \
 --draw
 ```
 
-To run demo for a youtube video:
+The original entry point remains available as `uv run python demo.py` with the same arguments.
+
+To process a YouTube video:
+
 ```bash
-python3 demo.py \
+uv run mivolo-cli \
 --input "https://www.youtube.com/shorts/pVh32k0hGEI" \
 --output "output" \
 --detector-weights "models/yolov8x_person_face.pt" \
 --checkpoint "models/mivolo_imbd.pth.tar" \
---device "cuda:0" \
+--device "auto" \
 --draw \
 --with-persons
 ```
@@ -369,17 +399,16 @@ To reproduce validation metrics:
 3. Run validation:
 
 ```bash
-python3 eval_pretrained.py \
+uv run python eval_pretrained.py \
   --dataset_images /path/to/dataset/utk/images \
   --dataset_annotations /path/to/dataset/utk/annotation \
   --dataset_name utk \
   --split valid \
   --batch-size 512 \
   --checkpoint models/mivolo_imbd.pth.tar \
-  --half \
   --with-persons \
-  --device "cuda:0"
-````
+  --device "cpu"
+```
 
 Supported dataset names: "utk", "imdb", "lagenda", "fairface", "adience".
 
@@ -403,7 +432,7 @@ This approach provides you with a model that maintains its original speed and on
 
 ## License
 
-Please, see [here](./license)
+Please, see [here](LICENSE).
 
 
 ## Citing

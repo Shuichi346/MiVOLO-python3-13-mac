@@ -9,8 +9,7 @@ import torch.nn as nn
 from mivolo.model.cross_bottleneck_attn import CrossBottleneckAttn
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from timm.layers import trunc_normal_
-from timm.models._builder import build_model_with_cfg
-from timm.models._registry import register_model
+from timm.models import build_model_with_cfg, register_model
 from timm.models.volo import VOLO
 
 __all__ = ["MiVOLOModel"]  # model_registry will add each entrypoint fn to this
@@ -220,27 +219,27 @@ class MiVOLOModel(VOLO):
         pooling_scale=2,
     ):
         super().__init__(
-            layers,
-            img_size,
-            in_chans,
-            num_classes,
-            global_pool,
-            patch_size,
-            stem_hidden_dim,
-            embed_dims,
-            num_heads,
-            downsamples,
-            outlook_attention,
-            mlp_ratio,
-            qkv_bias,
-            drop_rate,
-            attn_drop_rate,
-            drop_path_rate,
-            norm_layer,
-            post_layers,
-            use_aux_head,
-            use_mix_token,
-            pooling_scale,
+            layers=layers,
+            img_size=img_size,
+            in_chans=in_chans,
+            num_classes=num_classes,
+            global_pool=global_pool,
+            patch_size=patch_size,
+            stem_hidden_dim=stem_hidden_dim,
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            downsamples=downsamples,
+            outlook_attention=outlook_attention,
+            mlp_ratio=mlp_ratio,
+            qkv_bias=qkv_bias,
+            drop_rate=drop_rate,
+            attn_drop_rate=attn_drop_rate,
+            drop_path_rate=drop_path_rate,
+            norm_layer=norm_layer,
+            post_layers=post_layers,
+            use_aux_head=use_aux_head,
+            use_mix_token=use_mix_token,
+            pooling_scale=pooling_scale,
         )
 
         im_size = img_size[0] if isinstance(img_size, tuple) else img_size

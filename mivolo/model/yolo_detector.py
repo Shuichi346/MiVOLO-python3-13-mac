@@ -1,22 +1,17 @@
-import os
 from typing import Dict, Union
 
 import numpy as np
 import PIL
-import torch
+from mivolo.runtime import resolve_device, supports_half
 from mivolo.structures import PersonAndFaceResult
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
-
-# because of ultralytics bug it is important to unset CUBLAS_WORKSPACE_CONFIG after the module importing
-os.unsetenv("CUBLAS_WORKSPACE_CONFIG")
-
 
 class Detector:
     def __init__(
         self,
         weights: str,
-        device: str = "cuda",
+        device: str = "auto",
         half: bool = True,
         verbose: bool = False,
         conf_thresh: float = 0.4,
@@ -25,8 +20,8 @@ class Detector:
         self.yolo = YOLO(weights)
         self.yolo.fuse()
 
-        self.device = torch.device(device)
-        self.half = half and self.device.type != "cpu"
+        self.device = resolve_device(device)
+        self.half = half and supports_half(self.device)
 
         if self.half:
             self.yolo.model = self.yolo.model.half()
@@ -34,7 +29,13 @@ class Detector:
         self.detector_names: Dict[int, str] = self.yolo.model.names
 
         # init yolo.predictor
-        self.detector_kwargs = {"conf": conf_thresh, "iou": iou_thresh, "half": self.half, "verbose": verbose}
+        self.detector_kwargs = {
+            "conf": conf_thresh,
+            "iou": iou_thresh,
+            "half": self.half,
+            "verbose": verbose,
+            "device": str(self.device),
+        }
         # self.yolo.predict(**self.detector_kwargs)
 
     def predict(self, image: Union[np.ndarray, str, "PIL.Image"]) -> PersonAndFaceResult:

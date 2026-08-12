@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.32,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mivolo"
+dynamic = ["version"]
+description = "MiVOLO age and gender estimation for modern Python and macOS"
+readme = "README.md"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+authors = [
+  { name = "Layer Team, SberDevices" },
+]
+keywords = [
+  "age-estimation",
+  "computer-vision",
+  "deep-learning",
+  "gender-estimation",
+  "machine-learning",
+  "transformer",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+  "gdown>=5.2,<7",
+  "gradio>=6,<7",
+  "huggingface-hub>=1,<2",
+  "lapx>=0.9,<1",
+  "matplotlib>=3.10,<4",
+  "numpy>=2,<3",
+  "omegaconf>=2.3.1,<3",
+  "opencv-python>=4.11,<5",
+  "pandas>=2.2,<4",
+  "pillow>=11,<13",
+  "scipy>=1.15,<2",
+  "seaborn>=0.13,<1",
+  "timm>=1,<2",
+  "torch>=2.6,<3",
+  "torchvision>=0.21,<1",
+  "tqdm>=4.67,<5",
+  "ultralytics>=8.4,<9",
+  "yt-dlp>=2025.1.15",
+]
+
+[project.scripts]
+mivolo-cli = "mivolo.cli:main"
+mivolo-gui = "mivolo.gui:main"
+
+[project.urls]
+Homepage = "https://github.com/WildChlamydia/MiVOLO"
+Repository = "https://github.com/WildChlamydia/MiVOLO"
+Datasets = "https://wildchlamydia.github.io/lagenda/"
+
+[tool.hatch.version]
+path = "mivolo/version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/mivolo",
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["mivolo"]

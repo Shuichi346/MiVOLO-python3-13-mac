@@ -9,10 +9,9 @@ from timm.utils import AverageMeter, accuracy
 
 
 def time_sync():
-    # pytorch-accurate time
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    return time.time()
+    if torch.backends.mps.is_built() and torch.backends.mps.is_available():
+        torch.mps.synchronize()
+    return time.perf_counter()
 
 
 def write_results(results_file, results, format="csv"):

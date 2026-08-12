@@ -1,5 +1,4 @@
 import math
-import os
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple
 
@@ -9,9 +8,6 @@ import torch
 from mivolo.data.misc import aggregate_votes_winsorized, assign_faces, box_iou
 from ultralytics.engine.results import Results
 from ultralytics.utils.plotting import Annotator, colors
-
-# because of ultralytics bug it is important to unset CUBLAS_WORKSPACE_CONFIG after the module importing
-os.unsetenv("CUBLAS_WORKSPACE_CONFIG")
 
 AGE_GENDER_TYPE = Tuple[float, str]
 

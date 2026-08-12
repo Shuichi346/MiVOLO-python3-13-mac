@@ -8,7 +8,8 @@ import pandas as pd
 import torch
 import tqdm
 from mivolo.data.data_reader import PictureInfo, get_all_files
-from mivolo.modeling.yolo_detector import Detector, PersonAndFaceResult
+from mivolo.model.yolo_detector import Detector
+from mivolo.structures import PersonAndFaceResult
 from preparation_utils import assign_persons, associate_persons, get_additional_bboxes, get_main_face, save_annotations
 
 
@@ -180,7 +181,7 @@ def get_parser():
     parser.add_argument(
         "--detector_weights", default=None, type=str, required=False, help="path to face and person detector"
     )
-    parser.add_argument("--device", default="cuda:0", type=str, required=False, help="device to inference detector")
+    parser.add_argument("--device", default="auto", choices=("auto", "mps", "cpu"), help="inference device")
 
     return parser
 
@@ -200,6 +201,6 @@ if __name__ == "__main__":
 
     detector_cfg: Optional[Dict[str, str]] = None
     if args.detector_weights is not None:
-        detector_cfg = {"weights": args.detector_weights, "device": "cuda:0"}
+        detector_cfg = {"weights": args.detector_weights, "device": args.device}
 
     main(faces_dir, annotations, data_dir, detector_cfg)
