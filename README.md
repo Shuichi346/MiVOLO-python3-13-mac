@@ -1,3 +1,9 @@
+## About This Repository
+
+This repository is a fork of WildChlamydia/MiVOLO. It is configured to run on Mac using Python 3.13 and uv. You can easily experience the GUI.
+
+<br>
+
 <div align="center">
 <p>
    <a align="center" target="_blank">
@@ -5,8 +11,6 @@
 </p>
 <br>
 </div>
-
-
 
 ## MiVOLO: Multi-input Transformer for Age and Gender Estimation
 

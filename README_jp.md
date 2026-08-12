@@ -1,3 +1,9 @@
+## このリポジトリについて
+
+このリポジトリは、WildChlamydia/MiVOLOのフォークです。python 3.13, uvを使用してMacで動作するようにしています。簡単にGUIを体験できます。
+
+<br>
+
 <div align="center">
 <p>
    <a align="center" target="_blank">
@@ -5,8 +11,6 @@
 </p>
 <br>
 </div>
-
-
 
 ## MiVOLO: 年齢・性別推定のためのマルチ入力トランスフォーマー
 
