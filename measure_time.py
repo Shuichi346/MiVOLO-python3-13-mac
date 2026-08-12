@@ -3,6 +3,7 @@ import torch
 import tqdm
 from eval_tools import time_sync
 from mivolo.model.create_timm_model import create_model
+from mivolo.runtime import resolve_device
 
 if __name__ == "__main__":
 
@@ -16,7 +17,7 @@ if __name__ == "__main__":
     # batch_size = 16
     steps = 1000
     warmup_steps = 10
-    device = torch.device("cuda:1")
+    device = resolve_device("auto")
 
     df_data = []
     batch_sizes = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
@@ -37,25 +38,24 @@ if __name__ == "__main__":
         )
         model = model.to(device)
         model.eval()
-        model = model.half()
 
         time_per_batch = {}
         for batch_size in batch_sizes:
             create_t0 = time_sync()
             for _ in range(steps):
-                inputs = torch.randn((batch_size,) + tuple(input_size)).to(device).half()
+                inputs = torch.randn((batch_size,) + tuple(input_size)).to(device)
             create_t1 = time_sync()
             create_taken = create_t1 - create_t0
 
             with torch.no_grad():
-                inputs = torch.randn((batch_size,) + tuple(input_size)).to(device).half()
+                inputs = torch.randn((batch_size,) + tuple(input_size)).to(device)
                 for _ in range(warmup_steps):
                     out = model(inputs)
 
                 all_time = 0
                 for _ in tqdm.tqdm(range(steps), desc=f"{model_name} batch {batch_size}"):
                     start = time_sync()
-                    inputs = torch.randn((batch_size,) + tuple(input_size)).to(device).half()
+                    inputs = torch.randn((batch_size,) + tuple(input_size)).to(device)
                     out = model(inputs)
                     out += 1
                     end = time_sync()

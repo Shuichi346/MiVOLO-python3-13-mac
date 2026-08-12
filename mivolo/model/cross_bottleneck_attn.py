@@ -7,10 +7,7 @@ Modifications and additions for mivolo by / Copyright 2023, Irina Tolstykh, Maxi
 import torch
 import torch.nn as nn
 from timm.layers.bottleneck_attn import PosEmbedRel
-from timm.layers.helpers import make_divisible
-from timm.layers.mlp import Mlp
-from timm.layers.trace_utils import _assert
-from timm.layers.weight_init import trunc_normal_
+from timm.layers import Mlp, _assert, make_divisible, trunc_normal_
 
 
 class CrossBottleneckAttn(nn.Module):

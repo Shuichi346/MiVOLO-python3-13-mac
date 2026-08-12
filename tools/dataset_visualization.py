@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import cv2
 from mivolo.data.data_reader import PictureInfo, read_csv_annotation_file
-from ultralytics.yolo.utils.plotting import Annotator, colors
+from ultralytics.utils.plotting import Annotator, colors
 
 
 def get_parser():

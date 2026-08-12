@@ -18,7 +18,7 @@ def get_parser():
     parser.add_argument(
         "--detector_weights", default=None, type=str, required=False, help="path to face and person detector"
     )
-    parser.add_argument("--device", default="cuda:0", type=str, required=False, help="device to inference detector")
+    parser.add_argument("--device", default="auto", choices=("auto", "mps", "cpu"), help="inference device")
 
     return parser
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     detector_cfg: Optional[Dict[str, str]] = None
     if args.detector_weights is not None:
-        detector_cfg = {"weights": args.detector_weights, "device": "cuda:0"}
+        detector_cfg = {"weights": args.detector_weights, "device": args.device}
 
     splits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     collect_faces(

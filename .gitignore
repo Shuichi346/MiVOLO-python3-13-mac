@@ -3,7 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-*.DS_Store
+.DS_Store
+Thumbs.db
+.venv/
+.playwright-cli/
 
 # Distribution / packaging
 .Python
@@ -48,9 +51,6 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
-# pyenv
-.python-version
 
 # PyTorch weights
 *.tar

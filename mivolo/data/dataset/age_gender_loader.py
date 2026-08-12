@@ -5,7 +5,6 @@ Modifications and additions for mivolo by / Copyright 2023, Irina Tolstykh, Maxi
 """
 
 import logging
-from contextlib import suppress
 from functools import partial
 from itertools import repeat
 
@@ -59,7 +58,7 @@ class PrefetchLoaderForMultiInput(PrefetchLoader):
         mean=IMAGENET_DEFAULT_MEAN,
         std=IMAGENET_DEFAULT_STD,
         channels=3,
-        device=torch.device("cuda"),
+        device=torch.device("cpu"),
         img_dtype=torch.float32,
     ):
 
@@ -73,36 +72,12 @@ class PrefetchLoaderForMultiInput(PrefetchLoader):
         self.mean = torch.tensor([x * 255 for x in mean], device=device, dtype=img_dtype).view(normalization_shape)
         self.std = torch.tensor([x * 255 for x in std], device=device, dtype=img_dtype).view(normalization_shape)
 
-        self.is_cuda = torch.cuda.is_available() and device.type == "cuda"
-
     def __iter__(self):
-        first = True
-        if self.is_cuda:
-            stream = torch.cuda.Stream()
-            stream_context = partial(torch.cuda.stream, stream=stream)
-        else:
-            stream = None
-            stream_context = suppress
-
         for next_input, next_target in self.loader:
-
-            with stream_context():
-                next_input = next_input.to(device=self.device, non_blocking=True)
-                next_target = next_target.to(device=self.device, non_blocking=True)
-                next_input = next_input.to(self.img_dtype).sub_(self.mean).div_(self.std)
-
-            if not first:
-                yield input, target  # noqa: F823, F821
-            else:
-                first = False
-
-            if stream is not None:
-                torch.cuda.current_stream().wait_stream(stream)
-
-            input = next_input
-            target = next_target
-
-        yield input, target
+            next_input = next_input.to(device=self.device, non_blocking=True)
+            next_target = next_target.to(device=self.device, non_blocking=True)
+            next_input = next_input.to(self.img_dtype).sub_(self.mean).div_(self.std)
+            yield next_input, next_target
 
 
 def create_loader(
@@ -116,7 +91,7 @@ def create_loader(
     crop_mode=None,
     pin_memory=False,
     img_dtype=torch.float32,
-    device=torch.device("cuda"),
+    device=torch.device("cpu"),
     persistent_workers=True,
     worker_seeding="all",
     target_type=torch.int64,

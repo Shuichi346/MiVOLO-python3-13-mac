@@ -34,7 +34,12 @@ def get_parser():
     parser.add_argument(
         "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 4)"
     )
-    parser.add_argument("--device", default="cuda", type=str, help="Device (accelerator) to use.")
+    parser.add_argument(
+        "--device",
+        default="auto",
+        choices=("auto", "mps", "cpu"),
+        help="Inference device. Auto prefers Apple MPS and otherwise uses CPU.",
+    )
     parser.add_argument("--l-for-cs", type=int, default=5, help="L for CS (cumulative score)")
 
     parser.add_argument("--half", action="store_true", default=False, help="use half-precision model")
@@ -123,10 +128,6 @@ def postprocess_age(age_out: torch.tensor, age_target: torch.tensor, dataset) ->
 
 def validate(args):
 
-    if torch.cuda.is_available():
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.benchmark = True
-
     mivolo_model = MiVOLO(
         args.checkpoint,
         args.device,
@@ -197,10 +198,6 @@ def main():
     parser = get_parser()
     setup_default_logging()
     args = parser.parse_args()
-
-    if torch.cuda.is_available():
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.benchmark = True
 
     results = validate(args)
 
